@@ -2,7 +2,8 @@
 
 Classic Pong for phones, tablets and computers. Plain HTML, CSS and JavaScript (no framework, no build dependencies to run it). Capacitor wraps it as an iOS / Android app.
 
-![Game](./screenshots/shot-menu-portrait.png)
+
+<img src="./screenshots/shot-menu-portrait.png" alt="Game" width="300">
 
 ## Layout
 
@@ -63,3 +64,4 @@ Before you ship:
 
 - Settings are saved in `localStorage` under `pocket-pong`.
 - The court is a fixed 1000 x 560 field scaled to the screen; difficulty levels live in the `DIFF` table in `src/app.js`.
+- Online is still in progress.
