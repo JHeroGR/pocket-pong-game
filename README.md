@@ -2,6 +2,8 @@
 
 Classic Pong for phones, tablets and computers. Plain HTML, CSS and JavaScript (no framework, no build dependencies to run it). Capacitor wraps it as an iOS / Android app.
 
+![Game](./screenshots/shot-menu-portrait.png)
+
 ## Layout
 
 ```
