@@ -1,0 +1,9 @@
+{
+  "name": "Pocket Pong",
+  "short_name": "Pocket Pong",
+  "start_url": "./index.html",
+  "display": "fullscreen",
+  "orientation": "any",
+  "background_color": "#070707",
+  "theme_color": "#070707"
+}

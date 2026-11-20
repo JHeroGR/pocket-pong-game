@@ -1,0 +1,8 @@
+{
+  "appId": "app.pocketpong.game",
+  "appName": "Pocket Pong",
+  "webDir": "www",
+  "backgroundColor": "#070707",
+  "ios": { "contentInset": "never" },
+  "android": { "allowMixedContent": false }
+}

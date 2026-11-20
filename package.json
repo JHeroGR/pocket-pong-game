@@ -1,0 +1,23 @@
+{
+  "name": "pocket-pong",
+  "version": "1.0.0",
+  "description": "Pocket Pong: classic Pong for phones, tablets and computers. Plain HTML/CSS/JS, no framework.",
+  "private": true,
+  "scripts": {
+    "build": "node scripts/build.js",
+    "start": "npm run build && node scripts/serve.js",
+    "test": "npm run build && node tests/run.js",
+    "cap:add:ios": "npm run build && npx cap add ios",
+    "cap:add:android": "npm run build && npx cap add android",
+    "cap:sync": "npm run build && npx cap sync",
+    "cap:ios": "npm run cap:sync && npx cap open ios",
+    "cap:android": "npm run cap:sync && npx cap open android"
+  },
+  "devDependencies": {
+    "@capacitor/android": "^6.0.0",
+    "@capacitor/cli": "^6.0.0",
+    "@capacitor/core": "^6.0.0",
+    "@capacitor/ios": "^6.0.0",
+    "playwright": "^1.45.0"
+  }
+}

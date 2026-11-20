@@ -1,0 +1,167 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover,user-scalable=no">
+<meta name="theme-color" content="#070707">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<title>Pocket Pong</title>
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=VT323&display=swap">
+<link rel="stylesheet" href="src/styles.css">
+</head>
+<body>
+<div id="wrap">
+  <div id="stage" class="stage">
+    <canvas id="cv"></canvas>
+    <div class="scan"></div>
+    <button id="pauseBtn" class="pause" aria-label="Pause game" hidden><span></span><span></span></button>
+
+  </div>
+  <button id="fsBtn" class="fs desk-only" aria-label="Toggle fullscreen" title="Fullscreen (F)"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5"/></svg></button>
+  <div id="ui" class="port">
+    <section id="menuScr" class="screen" aria-label="Main menu">
+      <div class="menu-inner">
+        <header class="brand">
+          <h1><span>POCKET</span> <span>PONG</span></h1>
+          <p class="sub" id="subCtl">Drag a finger to slide your bar</p>
+          <p class="sub">First to the target score wins</p>
+          <p class="hints desk-only"><kbd>W</kbd><kbd>S</kbd> <kbd>&uarr;</kbd><kbd>&darr;</kbd> <kbd>Enter</kbd> play <kbd>P</kbd> pause <kbd>M</kbd> sound <kbd>F</kbd> full</p>
+        </header>
+        <div class="opts">
+          <div class="grp"><span class="lab">Mode</span>
+            <div class="segs" role="group" aria-label="Mode">
+              <button class="seg" data-key="mode" data-val="ai">1 Player</button>
+              <button class="seg" data-key="mode" data-val="2p">2 Players</button>
+              <button class="seg" data-key="mode" data-val="online">Online</button>
+            </div>
+          </div>
+          <div class="grp" id="grpDiff"><span class="lab">CPU level</span>
+            <div class="segs" role="group" aria-label="CPU level">
+              <button class="seg" data-key="diff" data-val="easy">Easy</button>
+              <button class="seg" data-key="diff" data-val="medium">Medium</button>
+              <button class="seg" data-key="diff" data-val="hard">Hard</button>
+              <button class="seg" data-key="diff" data-val="insane">Insane</button>
+            </div>
+            <p class="desc" id="diffDesc"></p>
+          </div>
+          <div class="grp" id="grpN1"><label class="lab" for="n1" id="labN1">Your name</label>
+            <input id="n1" class="inp" maxlength="8" autocomplete="off" autocapitalize="characters" spellcheck="false"></div>
+          <div class="grp" id="grpN2"><label class="lab" for="n2">Player 2 name</label>
+            <input id="n2" class="inp" maxlength="8" autocomplete="off" autocapitalize="characters" spellcheck="false"></div>
+          <div class="grp"><span class="lab">Points to win</span>
+            <div class="segs" role="group" aria-label="Points to win">
+              <button class="seg" data-key="target" data-val="3">3</button>
+              <button class="seg" data-key="target" data-val="5">5</button>
+              <button class="seg" data-key="target" data-val="7">7</button>
+              <button class="seg" data-key="target" data-val="11">11</button>
+            </div>
+          </div>
+          <div class="grp"><span class="lab">Ball size</span>
+            <div class="segs" role="group" aria-label="Ball size">
+              <button class="seg" data-key="ball" data-val="small">Small</button>
+              <button class="seg" data-key="ball" data-val="medium">Medium</button>
+              <button class="seg" data-key="ball" data-val="large">Large</button>
+            </div>
+          </div>
+          <div class="grp grp-view"><span class="lab">View</span>
+            <div class="segs view" role="group" aria-label="View">
+              <button class="seg" data-key="view" data-val="auto">Auto</button>
+              <button class="seg" data-key="view" data-val="land"><span>Horizontal</span><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="2.5" y="6.5" width="19" height="11"/><rect x="18" y="11" width="2" height="2" fill="currentColor" stroke="none"/></svg></button>
+              <button class="seg" data-key="view" data-val="port"><span>Vertical</span><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="6.5" y="2.5" width="11" height="19"/><rect x="11" y="18" width="2" height="2" fill="currentColor" stroke="none"/></svg></button>
+            </div>
+            <p class="desc">Auto follows your phone. Horizontal or Vertical turns the game to match.</p>
+          </div>
+          <div class="grp"><span class="lab">Sound</span>
+            <div class="segs" role="group" aria-label="Sound">
+              <button class="seg" data-key="sound" data-val="on">On</button>
+              <button class="seg" data-key="sound" data-val="off">Off</button>
+            </div>
+          </div>
+          <div class="grp desk-only"><span class="lab">Retro screen</span>
+            <div class="segs" role="group" aria-label="Retro screen">
+              <button class="seg" data-key="crt" data-val="on">On</button>
+              <button class="seg" data-key="crt" data-val="off">Off</button>
+            </div>
+          </div>
+        </div>
+        <div class="go"><button id="playBtn" class="btn">Play</button></div>
+      </div>
+    </section>
+
+    <section id="lobbyScr" class="screen" aria-label="Online game" hidden>
+      <div class="panel">
+        <h2>ONLINE</h2>
+        <p id="lbMsg" class="note" aria-live="polite"></p>
+        <div id="lbChoose" class="row">
+          <button id="lbHost" class="btn">Host a game</button>
+          <button id="lbJoin" class="btn ghost">Join a game</button>
+        </div>
+        <div id="lbHostBox" class="grp codebox" hidden>
+          <span class="lab">Share this code with your friend</span>
+          <b id="lbCode" class="code">----</b>
+        </div>
+        <div id="lbJoinBox" class="grp codebox" hidden>
+          <label class="lab" for="codeIn">Enter the host's code</label>
+          <input id="codeIn" class="inp code-in" maxlength="4" autocomplete="off" autocapitalize="characters" spellcheck="false">
+          <button id="lbGo" class="btn">Join</button>
+        </div>
+        <div class="row">
+          <button id="lbStart" class="btn" hidden>Start match</button>
+          <button id="lbBack" class="btn ghost">Back</button>
+        </div>
+      </div>
+    </section>
+
+    <section id="pauseScr" class="screen" aria-label="Paused" hidden>
+      <div class="panel">
+        <h2>PAUSED</h2>
+        <div class="row">
+          <button id="resumeBtn" class="btn">Resume</button>
+          <button id="restartBtn" class="btn ghost">Restart</button>
+          <button id="pauseMenuBtn" class="btn ghost">Menu</button>
+        </div>
+        <div class="pgroups">
+          <div class="grp grp-view"><span class="lab">View</span>
+            <div class="segs view" role="group" aria-label="View">
+              <button class="seg" data-key="view" data-val="auto">Auto</button>
+              <button class="seg" data-key="view" data-val="land"><span>Horizontal</span><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="2.5" y="6.5" width="19" height="11"/><rect x="18" y="11" width="2" height="2" fill="currentColor" stroke="none"/></svg></button>
+              <button class="seg" data-key="view" data-val="port"><span>Vertical</span><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="6.5" y="2.5" width="11" height="19"/><rect x="11" y="18" width="2" height="2" fill="currentColor" stroke="none"/></svg></button>
+            </div>
+          </div>
+          <div class="grp"><span class="lab">Sound</span>
+            <div class="segs" role="group" aria-label="Sound">
+              <button class="seg" data-key="sound" data-val="on">On</button>
+              <button class="seg" data-key="sound" data-val="off">Off</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section id="overScr" class="screen" aria-label="Match over" hidden>
+      <div class="panel">
+        <h2 id="ovTitle">PLAYER 1 WINS</h2>
+        <div class="final">
+          <span id="fn1" class="fname"></span><b id="fs1">0</b><i>-</i><b id="fs2">0</b><span id="fn2" class="fname"></span>
+        </div>
+        <dl class="stats">
+          <div class="stat"><dt>Longest rally</dt><dd id="stRally">0</dd></div>
+          <div class="stat"><dt>Total hits</dt><dd id="stHits">0</dd></div>
+          <div class="stat"><dt>Top ball speed</dt><dd id="stSpeed">1.0x</dd></div>
+          <div class="stat"><dt>Match time</dt><dd id="stTime">0:00</dd></div>
+        </dl>
+        <p class="series" id="ovSeries"></p>
+        <div class="row">
+          <button id="rematchBtn" class="btn">Rematch</button>
+          <button id="overMenuBtn" class="btn ghost">Menu</button>
+        </div>
+      </div>
+    </section>
+  </div>
+</div>
+<script src="src/app.js"></script>
+</body>
+</html>
