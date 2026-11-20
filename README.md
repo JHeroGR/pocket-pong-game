@@ -1,6 +1,6 @@
 # Pocket Pong
 
-Classic Pong for phones, tablets and computers. Plain HTML, CSS and JavaScript (no framework, no build dependencies to run it). Capacitor wraps it as an iOS / Android app.
+Classic Pong for phones, tablets and computers. Plain HTML, CSS and JavaScript (no framework, no build dependencies to run it). 
 
 
 <img src="./screenshots/shot-menu-portrait.png" alt="Game" width="300">
@@ -18,6 +18,7 @@ capacitor.config.json   native app settings (app id, name, web folder)
 tests/                  Playwright tests (npm test)
 www/                    BUILT: what Capacitor / a static host serves
 dist/                   BUILT: pocket-pong.single.html (one file), pocket-pong.artifact.html (Claude Artifact)
+screenshots/            screenshots of the game
 ```
 
 ## Run it
@@ -65,3 +66,4 @@ Before you ship:
 - Settings are saved in `localStorage` under `pocket-pong`.
 - The court is a fixed 1000 x 560 field scaled to the screen; difficulty levels live in the `DIFF` table in `src/app.js`.
 - Online is still in progress.
+- Working on android/ios build.
