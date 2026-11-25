@@ -1,16 +1,13 @@
 # Pocket Pong
 
-Classic Pong for phones, tablets and computers. Plain HTML, CSS and JavaScript (no framework, no build dependencies to run it). 
-
-
-<img src="./screenshots/shot-menu-portrait.png" alt="Game" width="300">
+Classic Pong for phones, tablets and computers. Plain HTML, CSS and JavaScript (no framework, no build dependencies to run it). Capacitor wraps it as an iOS / Android app.
 
 ## Layout
 
 ```
 index.html              page markup (links src/ and the fonts)
 src/styles.css          all styles
-src/app.js              game, AI difficulty table, menu, sound, online mode
+src/app.js              game, AI difficulty table, menu, sound (online mode is in the code but switched off)
 manifest.webmanifest    web-app manifest
 scripts/build.js        builds www/ and dist/
 scripts/serve.js        small local server for www/
@@ -18,7 +15,6 @@ capacitor.config.json   native app settings (app id, name, web folder)
 tests/                  Playwright tests (npm test)
 www/                    BUILT: what Capacitor / a static host serves
 dist/                   BUILT: pocket-pong.single.html (one file), pocket-pong.artifact.html (Claude Artifact)
-screenshots/            screenshots of the game
 ```
 
 ## Run it
@@ -59,11 +55,10 @@ Before you ship:
 - Fonts load from Google Fonts. For an app that must work offline, download Press Start 2P and VT323, put them in `src/fonts/`, and replace the Google link in `index.html` with `@font-face` rules in `src/styles.css`.
 - Replace the app id in `capacitor.config.json` (`app.pocketpong.game`) with your own.
 - Add app icons and a splash screen (`npx @capacitor/assets generate`).
-- Online 2-player uses a Claude Artifact room feature. In a standalone or native build that feature is not present, so Online shows "not available" and the other modes work normally. A native build would need its own server (for example WebSockets) to replace it.
+- Online 2-player is switched off for now: the Online button is not shown. The code is still in `src/app.js`; set `ONLINE_ENABLED` to `true` to bring the button back. It relies on a Claude Artifact room feature, which a standalone or native build does not have, so a native build would need its own server (for example WebSockets) first.
 
 ## Notes
 
 - Settings are saved in `localStorage` under `pocket-pong`.
+- The ball has no top speed: every return speeds it up (x1.045 + 6) until someone misses. `tests/speed.js` shows rallies end by about 60 returns, and `tests/tunneling.js` shows the ball cannot pass through a bar or wall at any speed. To add a cap, clamp `ball.sp` in `hit()`.
 - The court is a fixed 1000 x 560 field scaled to the screen; difficulty levels live in the `DIFF` table in `src/app.js`.
-- Online is still in progress.
-- Working on android/ios build.

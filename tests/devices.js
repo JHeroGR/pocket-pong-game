@@ -44,6 +44,13 @@ const vis = (page, sel) => page.evaluate((s) => { const e = document.querySelect
     await page.goto('file://' + SP + '/dev.html'); await page.waitForTimeout(400);
     ck(await page.evaluate(() => document.getElementById('stage').classList.contains('land') && !/rotate/.test(document.getElementById('stage').style.transform)), 'desktop ignores a saved forced-vertical view');
     await ctx.close(); }
+  // ---- Online is switched off: no button, and a saved online choice falls back to 1 Player
+  { const ctx = await browser.newContext({ viewport: { width: 1280, height: 720 } }); const page = await ctx.newPage();
+    await page.addInitScript(() => { try { localStorage.setItem('pocket-pong', JSON.stringify({ mode: 'online', v: 2 })); } catch (e) {} });
+    await page.goto('file://' + SP + '/dev.html'); await page.waitForTimeout(400);
+    ck(await page.evaluate(() => !document.querySelector('.seg[data-val="online"]') && !/online/i.test(document.getElementById('menuScr').textContent)), 'no Online button in the menu');
+    ck(await page.evaluate(() => document.querySelector('.seg[data-key="mode"].on').dataset.val === 'ai' && document.getElementById('playBtn').textContent === 'Play'), 'a saved Online choice falls back to 1 Player');
+    await ctx.close(); }
   // ---- phone + tablet: desktop extras are gone
   for (const [name, dev] of [['iPhone', devices['iPhone 13']], ['iPhone landscape', devices['iPhone 13 landscape']], ['iPad', devices['iPad (gen 7)']], ['iPad landscape', devices['iPad (gen 7) landscape']]]) {
     const ctx = await browser.newContext({ ...dev }); const page = await ctx.newPage();

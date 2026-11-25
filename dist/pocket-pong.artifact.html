@@ -153,7 +153,6 @@ html.desk .stage.playing{cursor:none}
             <div class="segs" role="group" aria-label="Mode">
               <button class="seg" data-key="mode" data-val="ai">1 Player</button>
               <button class="seg" data-key="mode" data-val="2p">2 Players</button>
-              <button class="seg" data-key="mode" data-val="online">Online</button>
             </div>
           </div>
           <div class="grp" id="grpDiff"><span class="lab">CPU level</span>
@@ -295,7 +294,8 @@ html.desk .stage.playing{cursor:none}
   /* ---------- constants (abstract play space: x runs paddle to paddle, y runs across) ---------- */
   var LEN = 1000, WALL = 8, PAD_M = 34, PAD_T = 14, PAD_L = 112, BALL = 16, R = 8;
   var P1_FACE = PAD_M + PAD_T, P2_FACE = LEN - PAD_M - PAD_T;
-  var BALL_START = 430, BALL_MAX = 900, SPEED_GAIN = 1.045, MAX_ANGLE = 0.95;
+  var BALL_START = 430, SPEED_GAIN = 1.045, MAX_ANGLE = 0.95;   // no top speed: every return speeds the ball up until someone misses (tests/speed.js shows rallies end by about 60 hits)
+  var MAX_STEP = 6;   // most the ball may travel between two collision checks (see tick)
   var KEY_SPEED = 720, TOUCH_SPEED = 2800;
   // ball sizes in court units: small, medium (the classic size) and large. BALL is the side length, R half of it.
   var BALL_SIZES = { small: 12, medium: 16, large: 24 };
@@ -321,7 +321,10 @@ html.desk .stage.playing{cursor:none}
   var cfg = { mode: 'ai', diff: 'medium', target: 7, ball: 'small', view: 'auto', sound: true, n1: 'PLAYER 1', n2: 'PLAYER 2' };
   try { var saved = JSON.parse(localStorage.getItem('pocket-pong') || 'null'); if (saved && typeof saved === 'object') { if (saved.v !== 2) delete saved.ball; Object.assign(cfg, saved); } } catch (e) {}   // v2: the default ball became small, so earlier saved sizes are dropped once
   cfg.v = 2;
-  if (['ai', '2p', 'online'].indexOf(cfg.mode) < 0) cfg.mode = 'ai';
+  // Online play is switched off for now: the code stays, but the Online button is not added and a saved 'online' choice falls back to 1 Player.
+  // To bring it back, set ONLINE_ENABLED to true (tests set window.__PP_ONLINE = true before the page loads).
+  var ONLINE_ENABLED = window.__PP_ONLINE === true;
+  if (['ai', '2p'].concat(ONLINE_ENABLED ? ['online'] : []).indexOf(cfg.mode) < 0) cfg.mode = 'ai';
   if (!DIFF[cfg.diff]) cfg.diff = 'medium';
   cfg.target = +cfg.target; if ([3, 5, 7, 11].indexOf(cfg.target) < 0) cfg.target = 7;
   if (['auto', 'land', 'port'].indexOf(cfg.view) < 0) cfg.view = 'auto';
@@ -366,7 +369,11 @@ html.desk .stage.playing{cursor:none}
     for (var i = 0; i < 2; i++) p[i].y = clamp(p[i].y, YMIN + PAD_L / 2, YMAX - PAD_L / 2);
     for (var j = 0; j < 2; j++) ai[j].target = clamp(ai[j].target, YMIN, YMAX);
   }
+  // path the ball took over the last TRAIL_T seconds, one point per physics step. The game draws it as a fading streak so a fast ball
+  // looks like it moves smoothly instead of jumping from place to place between two screen frames.
+  var trail = [], simT = 0, TRAIL_T = 0.055;
   function centerBall(dir, delay) {
+    trail.length = 0;
     ball.x = LEN / 2; ball.y = WID / 2; ball.vx = 0; ball.vy = 0; ball.sp = BALL_START;
     serveDir = dir; serveT = delay; phase = 'serve';
   }
@@ -569,7 +576,7 @@ html.desk .stage.playing{cursor:none}
     var dir = i === 0 ? 1 : -1;
     var rel = clamp((ball.y - p[i].y) / (PAD_L / 2 + R), -1, 1);
     var ang = rel * MAX_ANGLE;
-    ball.sp = Math.min(ball.sp * SPEED_GAIN + 6, BALL_MAX);
+    ball.sp = ball.sp * SPEED_GAIN + 6;
     ball.vx = dir * ball.sp * Math.cos(ang);
     ball.vy = ball.sp * Math.sin(ang);
     ball.x = i === 0 ? P1_FACE + R : P2_FACE - R;
@@ -590,6 +597,7 @@ html.desk .stage.playing{cursor:none}
   }
   function stepBall(h) {
     ball.x += ball.vx * h; ball.y += ball.vy * h;
+    simT += h; trail.push({ x: ball.x, y: ball.y, t: simT }); if (trail.length > 400) trail.shift();
     if (ball.y - R < YMIN) { ball.y = YMIN + R; ball.vy = Math.abs(ball.vy); wallHits++; beep(520, 0.05); }
     else if (ball.y + R > YMAX) { ball.y = YMAX - R; ball.vy = -Math.abs(ball.vy); wallHits++; beep(520, 0.05); }
     if (ball.vx < 0 && ball.x - R <= P1_FACE && ball.x + R >= PAD_M && Math.abs(ball.y - p[0].y) <= PAD_L / 2 + R) hit(0);
@@ -605,7 +613,9 @@ html.desk .stage.playing{cursor:none}
     if (phase === 'serve') { serveT -= dt; if (serveT <= 0) { launch(); phase = 'play'; } }
     movePaddle(0, dt); movePaddle(1, dt);
     if (phase === 'play') {
-      var n = Math.max(1, Math.ceil(dt / 0.008)), h = dt / n;
+      // swept in small steps so a fast ball can never jump over a bar or wall between two checks: never more than MAX_STEP units per step
+      // (the smallest bar window is 26 units deep), and never more than 8 ms per step, even after a 50 ms frame hitch.
+      var n = Math.max(1, Math.ceil(dt / 0.008), Math.ceil(ball.sp * dt / MAX_STEP)), h = dt / n;
       for (var k = 0; k < n && phase === 'play' && (scene === 'game' || scene === 'menu'); k++) stepBall(h);
     }
   }
@@ -689,6 +699,17 @@ html.desk .stage.playing{cursor:none}
       else { ctx.textAlign = 'right'; ctx.fillText('RALLY ' + stats.rally, viewW - 20, viewH / 2 + 40); }
     }
   }
+  function drawTrail() {
+    while (trail.length && trail[0].t < simT - TRAIL_T) trail.shift();
+    var k = clamp((ball.sp - 450) / 500, 0, 1);            // slow ball: classic look, no streak. fast ball: full streak
+    if (k <= 0 || trail.length < 2) return;
+    var n = trail.length, prevA = ctx.globalAlpha;
+    for (var i = 0; i < n - 1; i++) {
+      ctx.globalAlpha = 0.32 * k * (i + 1) / n;
+      rectA(trail[i].x - R, trail[i].y - R, BALL, BALL);
+    }
+    ctx.globalAlpha = prevA;
+  }
   function draw() {
     ctx.setTransform(1, 0, 0, 1, 0, 0);
     ctx.fillStyle = BG; ctx.fillRect(0, 0, cv.width, cv.height);
@@ -698,7 +719,10 @@ html.desk .stage.playing{cursor:none}
     for (var y = WALL + 8; y < WID - WALL - 8; y += 28) rectA(LEN / 2 - 3, y, 6, 14);
     rectA(PAD_M, p[0].y - PAD_L / 2, PAD_T, PAD_L);
     rectA(LEN - PAD_M - PAD_T, p[1].y - PAD_L / 2, PAD_T, PAD_L);
-    if (phase === 'play' || Math.floor(serveT * 6) % 2 === 0) rectA(ball.x - R, ball.y - R, BALL, BALL);
+    if (phase === 'play' || Math.floor(serveT * 6) % 2 === 0) {
+      if (phase === 'play') drawTrail();
+      rectA(ball.x - R, ball.y - R, BALL, BALL);
+    }
     if (scene !== 'menu') drawScoreboard();
   }
 
@@ -1088,7 +1112,16 @@ html.desk .stage.playing{cursor:none}
   window.addEventListener('orientationchange', relayout);
   if (window.visualViewport) window.visualViewport.addEventListener('resize', relayout);
   if (window.ResizeObserver) new ResizeObserver(layout).observe(wrap);
+  if (ONLINE_ENABLED) {
+    var ob = document.createElement('button'); ob.className = 'seg'; ob.setAttribute('data-key', 'mode'); ob.setAttribute('data-val', 'online'); ob.textContent = 'Online';
+    document.querySelector('.segs[aria-label="Mode"]').appendChild(ob);
+  }
   refreshUI(); layout(); startDemo(); layout();
+  if (window.__PP_TEST === true) window.__PP_TEST = {   // test-only hook: set window.__PP_TEST = true before the page loads (tests/tunneling.js)
+    ball: ball, trail: trail, simT: function () { return simT; }, TRAIL_T: TRAIL_T, p: p, ctrl: ctrl, stats: stats, tick: tick, applyBall: applyBall, ai: ai, DIFF: DIFF, resetAI: resetAI, centerBall: centerBall,
+    setPhase: function (v) { phase = v; }, setScene: function (v) { scene = v; },
+    consts: function () { return { LEN: LEN, PAD_M: PAD_M, P1_FACE: P1_FACE, P2_FACE: P2_FACE, PAD_L: PAD_L, R: R, YMIN: YMIN, YMAX: YMAX, MAX_STEP: MAX_STEP }; }
+  };
   requestAnimationFrame(frame);
 })();
 </script>

@@ -1,6 +1,6 @@
 // Runs every test file and fails if any prints a FAIL line or exits non-zero.
 const { spawnSync } = require('child_process'); const path = require('path');
-const files = ['sound-online.js', 'ball-size.js', 'title-and-defaults.js', 'layout.js', 'devices.js', 'packaged.js'];
+const files = ['sound-online.js', 'ball-size.js', 'title-and-defaults.js', 'layout.js', 'devices.js', 'packaged.js', 'tunneling.js', 'speed.js', 'trail.js'];
 let bad = 0, pass = 0;
 for (const f of files) {
   const r = spawnSync(process.execPath, [path.join(__dirname, f)], { encoding: 'utf8', timeout: 180000 });

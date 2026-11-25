@@ -1,7 +1,7 @@
 const { chromium } = require('playwright');
 const fs = require('fs');
 const SP = require('./helper').tmp;
-const src = require('./helper').artifact();
+const src = '<script>window.__PP_ONLINE = true;</script>' + require('./helper').artifact();
 fs.writeFileSync(SP + '/ball.html', '<!doctype html><html><head><meta charset="utf8"><meta name="viewport" content="width=device-width,initial-scale=1"><style>body{margin:0;font:14px system-ui}[hidden]{display:none!important}</style></head><body>' + src + '</body></html>');
 const URL = 'file://' + SP + '/ball.html';
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
