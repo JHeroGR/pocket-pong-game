@@ -1,64 +1,44 @@
-# Pocket Pong
+# 🎮 Pocket Pong
 
-Classic Pong for phones, tablets and computers. Plain HTML, CSS and JavaScript (no framework, no build dependencies to run it). Capacitor wraps it as an iOS / Android app.
+![Pocket Pong Menu](assets/menu-screenshot.png)
 
-## Layout
+**Pocket Pong** is a fast, accessible arcade Pong game for phones, tablets, and computers. Players face a customizable CPU or a local opponent, control the paddles, and race to a selected target score.
 
-```
-index.html              page markup (links src/ and the fonts)
-src/styles.css          all styles
-src/app.js              game, AI difficulty table, menu, sound (online mode is in the code but switched off)
-manifest.webmanifest    web-app manifest
-scripts/build.js        builds www/ and dist/
-scripts/serve.js        small local server for www/
-capacitor.config.json   native app settings (app id, name, web folder)
-tests/                  Playwright tests (npm test)
-www/                    BUILT: what Capacitor / a static host serves
-dist/                   BUILT: pocket-pong.single.html (one file), pocket-pong.artifact.html (Claude Artifact)
-```
+🔗 **[Play the Game](https://jherogr.github.io/pocket-pong-game/)**
 
-## Run it
+---
 
-```
-npm install          # only needed for tests and the native apps
-npm start            # builds, serves www/ on http://localhost:8080
-npm test             # builds, then runs every test (about 90 checks)
-```
+## ✨ Key Features
+* **Core Mechanic:** Control a paddle to return the ball, build rallies, and win the first match to 3, 5, 7, or 11 points.
+* **Modes and Difficulty:** Play solo against Easy, Medium, Hard, or Insane CPU levels, or compete locally in two-player mode.
+* **Custom Match Settings:** Choose ball size, points to win, player names, horizontal or vertical view, and sound preferences.
+* **Touch and Desktop Support:** Use touch, mouse, W/S or arrow keys, fullscreen, and retro scanline options.
 
-Open `dist/pocket-pong.single.html` directly for a one-file copy you can send around.
+---
 
-## What differs by device
+## 🕹️ Controls
 
-| | Phone / tablet (touch) | Computer (mouse, wide window) |
-|---|---|---|
-| Controls | drag a finger | mouse, W/S, arrow keys |
-| View choice (Auto / Horizontal / Vertical) | yes | hidden: a monitor does not turn |
-| Scanline overlay | off (saves battery, keeps small text sharp) | on, with a Retro screen On/Off option |
-| Keyboard hints, fullscreen button | not shown | shown |
-| Hotkeys | none | Enter play / resume / rematch, P or Esc pause, M sound, F fullscreen |
+| Action | Keyboard / Mouse | Controller |
+| :--- | :--- | :--- |
+| **Move** | `W` `S` / Arrow Keys / Mouse or Touch | Not currently supported |
+| **Start / Resume / Rematch** | `Enter` | Not currently supported |
+| **Pause** | `P` / `Esc` | Not currently supported |
+| **Toggle Sound** | `M` | Not currently supported |
+| **Toggle Fullscreen** | `F` | Not currently supported |
 
-A computer is detected with `(hover: hover) and (pointer: fine) and (min-width: 900px)`; everything else gets the touch layout.
+---
 
-## iOS and Android apps (Capacitor)
+## 🛠️ Built With
+* **Engine / Framework:** Vanilla HTML, CSS, and JavaScript
+* **Tool:** Claude
+* **Art and Graphics:** HTML Canvas and custom pixel-style UI
+* **Audio:** Browser-generated arcade sound
+* **Language:** JavaScript
+* **Native Packaging:** Capacitor
+* **Testing:** Playwright
 
-Needs Node, plus Xcode (iOS, on a Mac) and Android Studio (Android).
+---
 
-```
-npm install
-npm run cap:add:ios        # once
-npm run cap:add:android    # once
-npm run cap:ios            # builds, syncs, opens Xcode
-npm run cap:android        # builds, syncs, opens Android Studio
-```
-
-Before you ship:
-- Fonts load from Google Fonts. For an app that must work offline, download Press Start 2P and VT323, put them in `src/fonts/`, and replace the Google link in `index.html` with `@font-face` rules in `src/styles.css`.
-- Replace the app id in `capacitor.config.json` (`app.pocketpong.game`) with your own.
-- Add app icons and a splash screen (`npx @capacitor/assets generate`).
-- Online 2-player is switched off for now: the Online button is not shown. The code is still in `src/app.js`; set `ONLINE_ENABLED` to `true` to bring the button back. It relies on a Claude Artifact room feature, which a standalone or native build does not have, so a native build would need its own server (for example WebSockets) first.
-
-## Notes
-
-- Settings are saved in `localStorage` under `pocket-pong`.
-- The ball has no top speed: every return speeds it up (x1.045 + 6) until someone misses. `tests/speed.js` shows rallies end by about 60 returns, and `tests/tunneling.js` shows the ball cannot pass through a bar or wall at any speed. To add a cap, clamp `ball.sp` in `hit()`.
-- The court is a fixed 1000 x 560 field scaled to the screen; difficulty levels live in the `DIFF` table in `src/app.js`.
+## 🤝 Credits & License
+* **Developed by:** JHeroGR
+* **Third-Party Assets:** Press Start 2P and VT323 Google Fonts
